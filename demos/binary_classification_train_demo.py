@@ -36,7 +36,7 @@ optimizer = optim.Adam(vgg16.classifier.parameters(), lr=0.0001)
 
 writer = SummaryWriter('../outputs')
 # 训练模型
-num_epochs = 100
+num_epochs = 20
 
 for epoch in range(num_epochs):
     vgg16.train()
