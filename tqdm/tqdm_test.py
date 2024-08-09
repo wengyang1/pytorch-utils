@@ -18,6 +18,9 @@ from torch.utils.data import DataLoader
 trainloader = DataLoader(trainset, batch_size=64, shuffle=True, num_workers=0)
 testloader = DataLoader(testset, batch_size=64, shuffle=False, num_workers=0)
 
+'''
+参考 demos.binary_classification_train_demo.py中tqdm的用法
+'''
 # 使用DataLoader迭代数据
 for images, labels in tqdm(trainloader):
     pass

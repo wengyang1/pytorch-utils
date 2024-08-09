@@ -40,7 +40,8 @@ num_epochs = 20
 
 for epoch in range(num_epochs):
     vgg16.train()
-    for i, data in enumerate(tqdm(train_loader)):
+    epoch_iterator=tqdm(train_loader)
+    for i, data in enumerate(epoch_iterator):
         inputs, labels = data
         optimizer.zero_grad()
 
@@ -48,7 +49,9 @@ for epoch in range(num_epochs):
         outputs = outputs.view(-1, 1)
         labels = labels.view(-1, 1)
         loss = criterion(outputs, labels)
-        tqdm.write(f'Epoch [{epoch + 1}/{num_epochs}], Step [{i + 1}/{len(train_loader)}], Loss: {loss.item()}')
+        # tqdm.write不推荐，会换行打印，格式较为混乱
+        # tqdm.write(f'Epoch [{epoch + 1}/{num_epochs}], Step [{i + 1}/{len(train_loader)}], Loss: {loss.item()}')
+        epoch_iterator.set_description(f'Epoch [{epoch + 1}/{num_epochs}], Step [{i + 1}/{len(train_loader)}], Loss: {loss.item()}')
         writer.add_scalar('Training/loss', loss.item(), epoch * len(train_loader) + i)
         loss.backward()
         optimizer.step()
