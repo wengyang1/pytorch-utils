@@ -1,6 +1,6 @@
-tqdm
 torch
 torchvision
 opencv-python
 tensorboard
-numpy<2.0.1
+numpy<2.0.0
+tqdm
