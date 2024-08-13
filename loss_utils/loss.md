@@ -1,3 +1,8 @@
+# loss可视化
+```commandline
+想要记录loss等训练指标，可以使用tensorboard
+浏览器打开loss日志: tensorboard --logdir=outputs
+```
 # loss收敛问题
 ```commandline
 1 loss无法收敛，可能的原因

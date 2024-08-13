@@ -1,5 +1,6 @@
-要知道一张图片是灰度图还是彩色图，可以通过多种方法来判断。以下是一些常用的方法：
+# 要知道一张图片是灰度图还是彩色图，可以通过多种方法来判断。以下是一些常用的方法：
 
+```commandline
 1. 查看图片文件属性
 在某些图片查看器或编辑器中，你可以直接查看图片的属性信息，包括颜色模式。如果图片是灰度图，它的颜色模式通常会被标记为“灰度”或“灰度模式”（Grayscale）；如果是彩色图，则会被标记为“RGB”或其他彩色模式（如CMYK，但这种情况较少见于普通图片）。
 
@@ -41,3 +42,13 @@ else:
 
 总结
 最可靠的方法是使用图像处理库来检查图片的颜色通道数或模式。这种方法不仅准确，而且可以在编程中自动化处理大量图片。
+```
+
+```commandline
+gray_image = cv2.imread(gray_path)
+print(gray_image.shape,type(gray_image))
+gt = Image.open(gray_path)
+print(gt.size,type(gt))
+gt = np.asarray(gt, dtype=np.float32) / 255.0
+使用 np.asarray 处理灰度图后，shape为 h,w 没有c
+```
