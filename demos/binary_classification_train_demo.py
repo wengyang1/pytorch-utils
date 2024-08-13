@@ -4,7 +4,7 @@ import torch.optim as optim
 from torchvision import models, transforms, datasets
 from torch.utils.data import DataLoader
 import numpy as np
-from datasets_utils.my_dataset_demo import MyDataset
+from datasets_utils.custom_dataset import MyDataset
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 

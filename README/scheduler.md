@@ -1,3 +1,11 @@
+## 对于scheduler的使用demo
+```commandline
+参考demos.vgg16_cifar10.py
+optimizer = optim.Adam(vgg16.classifier.parameters(), lr=1e-3)
+scheduler = CosineAnnealingLR(optimizer, T_max=len(trainloader), eta_min=1e-4)
+```
+
+## 介绍
 ```commandline
 PyTorch的scheduler（调度器）是一种用于在训练过程中动态调整优化算法中学习率的机制。学习率是控制模型参数更新幅度的关键超参数，而调度器根据预定的策略在训练过程中动态地调整学习率，从而帮助优化器更有效地搜索参数空间，避免陷入局部最小值，并加快收敛速度。以下是对PyTorch scheduler的详细解释：
 
