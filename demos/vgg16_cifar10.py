@@ -8,10 +8,15 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 from torch.optim.lr_scheduler import CosineAnnealingLR
+from datetime import datetime
 
 '''
 使用vgg16处理cifar10数据集的10分类任务
 '''
+
+def cal_op(model):
+    print()
+
 
 DEVICE = torch.device('cuda:0') if torch.cuda.is_available() else \
     (torch.device('mps:0') if torch.backends.mps.is_available() else torch.device('cpu'))
@@ -25,6 +30,8 @@ vgg16 = models.vgg16(pretrained=True)
 num_ftrs = vgg16.classifier[6].in_features
 vgg16.classifier[6] = nn.Linear(num_ftrs, 10)  # 替换为你自己的类别数
 vgg16.to(DEVICE)
+# 根据模型参数所在的device判断是否利用了gpu
+print(f"Model is running on {next(vgg16.parameters()).device}.")
 
 # 定义数据转换操作
 transform = transforms.Compose([
@@ -40,12 +47,14 @@ testloader = DataLoader(testset, batch_size=64, shuffle=False, num_workers=0)
 
 criterion = nn.CrossEntropyLoss()
 
-optimizer = optim.Adam(vgg16.classifier.parameters(), lr=1e-3)
-scheduler = CosineAnnealingLR(optimizer, T_max=10 * len(trainloader), eta_min=1e-4)
+num_epochs = 100
 
-writer = SummaryWriter('../outputs')
+optimizer = optim.Adam(vgg16.classifier.parameters(), lr=1e-3)
+scheduler = CosineAnnealingLR(optimizer, T_max=num_epochs * len(trainloader), eta_min=1e-4)
+
+output_path = os.path.join('../outputs', 'vgg16_cifar10', datetime.now().strftime("%Y%m%d%H%M%S"))
+writer = SummaryWriter(output_path)
 # 训练模型
-num_epochs = 400
 for epoch in range(num_epochs):
     vgg16.train()
     epoch_iterator = tqdm(trainloader)
@@ -67,7 +76,7 @@ for epoch in range(num_epochs):
         optimizer.step()
         scheduler.step()
     model_state_dict = vgg16.state_dict()
-    model_path = os.path.join('../outputs', 'last.pth')
+    model_path = os.path.join(output_path, 'last.pth')
     torch.save(model_state_dict, model_path)
     print('save model to {}'.format(model_path))
 print('Finished Training')
