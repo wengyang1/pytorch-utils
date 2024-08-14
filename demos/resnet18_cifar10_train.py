@@ -32,8 +32,6 @@ def save_model(model, save_path):
     model_state_dict = model.state_dict()
     model_path = os.path.join(save_path, 'last.pth')
     torch.save(model_state_dict, model_path)
-    print('save model to {}'.format(model_path))
-
 
 def eval_model(model, testloader, global_step, writer):
     model.eval()  # 设置模型为评估模式
@@ -51,13 +49,14 @@ def eval_model(model, testloader, global_step, writer):
 
 
 # 加载预训练的resnet18模型
-resnet18 = models.resnet18(pretrained=False)
+resnet18 = models.resnet18(pretrained=True)
 # 替换全连接层以匹配你的类别数
 num_ftrs = resnet18.fc.in_features  # 获取全连接层的输入特征数
 resnet18.fc = nn.Linear(num_ftrs, 10)  # 修改全连接层输出为10类
 
-checkpoint = torch.load('../outputs/resnet18_cifar10/train20240814175733/last.pth', map_location='cpu')
-resnet18.load_state_dict(checkpoint, strict=False)  # strict=False 忽略不匹配的key
+
+# checkpoint = torch.load('../outputs/resnet18_cifar10/train20240814185737/last.pth', map_location='cpu')
+# resnet18.load_state_dict(checkpoint, strict=False)  # strict=False 忽略不匹配的key
 
 resnet18.to(DEVICE)
 # 根据模型参数所在的device判断是否利用了gpu
@@ -67,8 +66,8 @@ cal_op(resnet18)
 
 # 定义数据转换操作
 transform_train = transforms.Compose([
+    random_scale.RandomScale((1.0, 1.5)),
     transforms.RandomCrop(32, padding=4),
-    random_scale.RandomScale((0.5, 1.5)),
     transforms.RandomHorizontalFlip(),
     transforms.ToTensor(),
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
@@ -89,10 +88,11 @@ criterion = nn.CrossEntropyLoss()
 
 num_epochs = 100
 
-optimizer = optim.Adam(resnet18.parameters(), lr=1e-3)
-scheduler = CosineAnnealingLR(optimizer, T_max=num_epochs * len(trainloader), eta_min=1e-4)
+optimizer = optim.Adam(resnet18.parameters(), lr=1e-4)
+scheduler = CosineAnnealingLR(optimizer, T_max=num_epochs * len(trainloader), eta_min=1e-6)
 
 output_path = os.path.join('../outputs', 'resnet18_cifar10', 'train' + datetime.now().strftime("%Y%m%d%H%M%S"))
+print('train info save path {}'.format(output_path))
 writer = SummaryWriter(output_path)
 # 训练模型
 global_step = 0
@@ -116,5 +116,5 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
         scheduler.step()
-    save_model(resnet18, output_path)
     eval_model(resnet18, testloader, global_step, writer)
+    save_model(resnet18, output_path)
