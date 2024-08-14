@@ -11,6 +11,7 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from datetime import datetime
 from thop import profile
 from little_demo.data_augmentation import random_scale
+
 '''
 使用resnet18处理cifar10数据集的10分类任务
 '''
@@ -30,8 +31,8 @@ def cal_op(model):
 
 def save_model(model, save_path):
     model_state_dict = model.state_dict()
-    model_path = os.path.join(save_path, 'last.pth')
-    torch.save(model_state_dict, model_path)
+    torch.save(model_state_dict, save_path)
+
 
 def eval_model(model, testloader, global_step, writer):
     model.eval()  # 设置模型为评估模式
@@ -54,9 +55,8 @@ resnet18 = models.resnet18(pretrained=True)
 num_ftrs = resnet18.fc.in_features  # 获取全连接层的输入特征数
 resnet18.fc = nn.Linear(num_ftrs, 10)  # 修改全连接层输出为10类
 
-
-# checkpoint = torch.load('../outputs/resnet18_cifar10/train20240814185737/last.pth', map_location='cpu')
-# resnet18.load_state_dict(checkpoint, strict=False)  # strict=False 忽略不匹配的key
+checkpoint = torch.load('../outputs/resnet18_cifar10/train20240814234139/best.pth', map_location='cpu')
+resnet18.load_state_dict(checkpoint, strict=False)  # strict=False 忽略不匹配的key
 
 resnet18.to(DEVICE)
 # 根据模型参数所在的device判断是否利用了gpu
@@ -66,9 +66,10 @@ cal_op(resnet18)
 
 # 定义数据转换操作
 transform_train = transforms.Compose([
-    random_scale.RandomScale((1.0, 1.5)),
+    random_scale.RandomScale((1.0, 4.0)),
     transforms.RandomCrop(32, padding=4),
     transforms.RandomHorizontalFlip(),
+    transforms.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1),
     transforms.ToTensor(),
     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
 ])
@@ -86,16 +87,17 @@ testloader = DataLoader(testset, batch_size=64, shuffle=False, num_workers=0)
 
 criterion = nn.CrossEntropyLoss()
 
-num_epochs = 100
+num_epochs = 1000
 
 optimizer = optim.Adam(resnet18.parameters(), lr=1e-4)
-scheduler = CosineAnnealingLR(optimizer, T_max=num_epochs * len(trainloader), eta_min=1e-6)
+scheduler = CosineAnnealingLR(optimizer, T_max=int(num_epochs/10) * len(trainloader), eta_min=1e-5)
 
 output_path = os.path.join('../outputs', 'resnet18_cifar10', 'train' + datetime.now().strftime("%Y%m%d%H%M%S"))
 print('train info save path {}'.format(output_path))
 writer = SummaryWriter(output_path)
 # 训练模型
 global_step = 0
+best_loss = float('inf')
 for epoch in range(num_epochs):
     resnet18.train()
     epoch_iterator = tqdm(trainloader)
@@ -116,5 +118,8 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
         scheduler.step()
+        if loss.item() < best_loss:
+            best_loss = loss.item()
+            save_model(resnet18, os.path.join(output_path, 'best.pth'))
     eval_model(resnet18, testloader, global_step, writer)
-    save_model(resnet18, output_path)
+    save_model(resnet18, os.path.join(output_path, 'last.pth'))
