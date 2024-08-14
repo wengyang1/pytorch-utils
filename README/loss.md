@@ -10,7 +10,7 @@ lr大了，之前遇到过一个case，lr=0.001，一直无法收敛，loss反�
 ```
 ## 二分类
 ```commandline
-二分类的loss中的inputs和targets的数据格式,
+torch.nn.BCEWithLogitsLoss
 可以参考BCEWithLogitsLoss_demo.py
 ```
 ## 多分类
