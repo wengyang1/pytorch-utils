@@ -90,7 +90,7 @@ criterion = nn.CrossEntropyLoss()
 num_epochs = 1000
 
 optimizer = optim.Adam(resnet18.parameters(), lr=1e-4)
-scheduler = CosineAnnealingLR(optimizer, T_max=int(num_epochs/10) * len(trainloader), eta_min=1e-5)
+scheduler = CosineAnnealingLR(optimizer, T_max=num_epochs * len(trainloader), eta_min=1e-5)
 
 output_path = os.path.join('../outputs', 'resnet18_cifar10', 'train' + datetime.now().strftime("%Y%m%d%H%M%S"))
 print('train info save path {}'.format(output_path))
